@@ -1,0 +1,17 @@
+# requirements.txt - Versions exactes de votre système
+
+# ===== FRAMEWORKS WEB =====
+Flask==2.2.5              # ✅ Version de votre système
+Flask-CORS==4.0.0          # ➕ Ajouté (pas installé chez vous)
+
+# ===== KAFKA =====
+kafka-python==2.1.4        # ✅ Version de votre système
+
+# ===== API MÉTÉO =====
+requests==2.31.0           # ✅ Version de votre système
+
+# ===== MANIPULATION DONNÉES =====
+python-dateutil==2.8.2     # ✅ Version de votre système
+
+# ===== UTILITAIRES =====
+python-dotenv==1.0.0       # ➕ Ajouté (pas installé chez vous)

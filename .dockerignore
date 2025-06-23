@@ -1,0 +1,63 @@
+# .dockerignore - Fichiers à exclure du contexte Docker
+
+# ===== FICHIERS PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ===== FICHIERS SYSTÈME =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===== GIT =====
+.git/
+.gitignore
+.gitattributes
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== TESTS =====
+tests/
+test_*.py
+*_test.py
+
+# ===== DOCUMENTATION =====
+README.md
+*.md
+docs/
+
+# ===== LOGS =====
+*.log
+logs/
+
+# ===== ENVIRONNEMENT =====
+.env
+.env.local
+.env.*.local
+
+# ===== DOCKER =====
+docker-compose.yml
+docker-compose.override.yml
+Dockerfile
+.dockerignore
+
+# ===== DOSSIERS TEMPORAIRES =====
+tmp/
+temp/
