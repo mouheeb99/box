@@ -1,17 +1,13 @@
-# box_manager.py
+# box_manager.py - 
 
 import time
 import threading
 try:
     from .box import BoxSimulateur
-    from .box_meteo_reelle import BoxMeteoReelle  
     from .kafka_utils import envoyer_trame
 except ImportError:
     from box import BoxSimulateur
-    from box_meteo_reelle import BoxMeteoReelle  
     from kafka_utils import envoyer_trame
-
-
 
 class BoxManager:
     def __init__(self):
@@ -20,21 +16,6 @@ class BoxManager:
         self.running = {}  # État des simulations
         self.simulation_intervals = {}  # Intervalles de simulation
     
-    def create_meteo_box(self, box_id, ville="Paris", api_key=None):
-        if box_id in self.boxes:
-         return False, f"Box {box_id} existe déjà"
-    
-        try:
-            # Créer la box météo
-            box = BoxMeteoReelle(box_id, ville, api_key)
-            self.boxes[box_id] = box
-        
-            print(f"📦 Box météo {box_id} créée pour {ville}")
-            return True, f"Box météo {box_id} créée avec succès"
-        
-        except Exception as e:
-            return False, f"Erreur lors de la création: {str(e)}"
-
     def create_box(self, box_id, config=None):
         """Crée une nouvelle box"""
         if box_id in self.boxes:
@@ -95,46 +76,6 @@ class BoxManager:
             result[box_id] = self.get_box_status(box_id)
         return result
     
-    def update_capteur_value(self, box_id, capteur_id, value):
-        """Met à jour la valeur d'un capteur"""
-        box = self.get_box(box_id)
-        if not box:
-            return False, "Box non trouvée"
-        
-        if capteur_id not in box.capteurs:
-            return False, f"Capteur {capteur_id} non trouvé"
-        
-        try:
-            # Convertir selon le type
-            if box.capteurs[capteur_id]["unite"] == "bool":
-                value = int(value)
-            else:
-                value = float(value)
-            
-            box.set_capteur_valeur(capteur_id, value)
-            return True, f"Capteur {capteur_id} mis à jour"
-        except Exception as e:
-            return False, f"Erreur: {str(e)}"
-    
-    def update_relais_state(self, box_id, relais_id, state):
-        """Met à jour l'état d'un relais"""
-        box = self.get_box(box_id)
-        if not box:
-            return False, "Box non trouvée"
-        
-        if relais_id not in box.relais:
-            return False, f"Relais {relais_id} non trouvé"
-        
-        try:
-            state = int(state)
-            if state not in [0, 1]:
-                return False, "L'état doit être 0 ou 1"
-            
-            box.set_relais_etat(relais_id, state)
-            return True, f"Relais {relais_id} mis à jour"
-        except Exception as e:
-            return False, f"Erreur: {str(e)}"
-    
     def start_simulation(self, box_id, intervalle=None, evolution=True):
         """Démarre la simulation pour une box"""
         box = self.get_box(box_id)
@@ -161,7 +102,7 @@ class BoxManager:
         def simulation_task():
             while self.running.get(box_id, False):
                 try:
-                    # === NOUVEAU: Faire évoluer les valeurs ===
+                    # Faire évoluer les valeurs si demandé
                     if evolution:
                         box.evoluer_valeurs()
                     
@@ -185,10 +126,6 @@ class BoxManager:
         evolution_msg = " (avec évolution)" if evolution else " (valeurs fixes)"
         return True, f"Simulation démarrée (intervalle: {intervalle}s){evolution_msg}"
     
-    def start_simulation_statique(self, box_id, intervalle=None):
-        """Démarre une simulation avec valeurs fixes (ancien comportement)"""
-        return self.start_simulation(box_id, intervalle, evolution=False)
-    
     def stop_simulation(self, box_id):
         """Arrête la simulation pour une box"""
         if box_id not in self.boxes:
@@ -208,43 +145,6 @@ class BoxManager:
         
         return True, f"Simulation arrêtée"
     
-    def evoluer_box_maintenant(self, box_id):
-        """Force l'évolution des valeurs d'une box immédiatement"""
-        box = self.get_box(box_id)
-        if not box:
-            return False, "Box non trouvée"
-        
-        try:
-            box.evoluer_valeurs()
-            return True, f"Valeurs de la box {box_id} évoluées"
-        except Exception as e:
-            return False, f"Erreur lors de l'évolution: {str(e)}"
-    
-    def evoluer_toutes_boxes(self):
-        """Force l'évolution de toutes les box"""
-        resultats = {}
-        for box_id in self.boxes:
-            success, message = self.evoluer_box_maintenant(box_id)
-            resultats[box_id] = {"success": success, "message": message}
-        
-        return True, resultats
-    
-    def reset_valeurs_base(self, box_id):
-        """Remet les valeurs de base d'une box à leur état initial"""
-        box = self.get_box(box_id)
-        if not box:
-            return False, "Box non trouvée"
-        
-        try:
-            # Réinitialiser les valeurs de base avec les valeurs actuelles
-            for capteur_id, capteur in box.capteurs.items():
-                box.valeurs_base[capteur_id] = capteur["valeur"]
-                box.tendances[capteur_id] = 0  # Remettre stable
-            
-            return True, f"Valeurs de base réinitialisées pour {box_id}"
-        except Exception as e:
-            return False, f"Erreur: {str(e)}"
-    
     def send_specific_trame(self, box_id, trame_type, evolution_avant=False, **kwargs):
         """Envoie une trame spécifique"""
         box = self.get_box(box_id)
@@ -252,7 +152,7 @@ class BoxManager:
             return False, "Box non trouvée"
         
         try:
-            # === NOUVEAU: Option d'évolution avant envoi ===
+            # Option d'évolution avant envoi
             if evolution_avant:
                 box.evoluer_valeurs()
             
@@ -284,31 +184,6 @@ class BoxManager:
         except Exception as e:
             return False, f"Erreur: {str(e)}"
     
-    def get_evolution_status(self, box_id):
-        """Récupère le statut d'évolution d'une box"""
-        box = self.get_box(box_id)
-        if not box:
-            return None
-        
-        try:
-            status = {
-                "box_id": box_id,
-                "valeurs_actuelles": {},
-                "valeurs_base": {},
-                "tendances": {},
-                "derniere_evolution": box.derniere_evolution
-            }
-            
-            # Capteurs actuels vs base
-            for capteur_id, capteur in box.capteurs.items():
-                status["valeurs_actuelles"][capteur_id] = capteur["valeur"]
-                status["valeurs_base"][capteur_id] = box.valeurs_base.get(capteur_id, capteur["valeur"])
-                status["tendances"][capteur_id] = box.tendances.get(capteur_id, 0)
-            
-            return status
-        except Exception as e:
-            return {"erreur": str(e)}
-    
     def get_available_capteurs(self):
         """Liste des capteurs disponibles"""
         return {
@@ -328,8 +203,6 @@ class BoxManager:
             "WC": "Eau (L)",
             "GC": "Gaz (m³)"
         }
-    
-    
 
 # Instance singleton du manager
 box_manager = BoxManager()

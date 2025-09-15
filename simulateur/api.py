@@ -1,4 +1,4 @@
-# api.py
+# api.py 
 from flask import Flask, request, jsonify
 from box_manager import box_manager
 
@@ -7,35 +7,6 @@ app = Flask(__name__)
 # ==========================================
 # ENDPOINTS POUR LA GESTION DES BOX
 # ==========================================
-# ==========================================
-# ENDPOINTS POUR LES BOX MÉTÉO RÉELLES
-# ==========================================
-
-@app.route('/api/boxes/meteo', methods=['POST'])
-def create_meteo_box():
-    """Crée une box météo avec données réelles"""
-    data = request.json
-    box_id = data.get('id')
-    ville = data.get('ville', 'Paris')
-    api_key = data.get('api_key')
-    
-    if not box_id:
-        return jsonify({"error": "ID de box requis"}), 400
-    
-    if not api_key:
-        return jsonify({"error": "Clé API météo requise"}), 400
-    
-    success, message = box_manager.create_meteo_box(box_id, ville, api_key)
-    
-    if success:
-        return jsonify({
-            "message": message, 
-            "id": box_id,
-            "ville": ville,
-            "type": "meteo_reelle"
-        }), 201
-    else:
-        return jsonify({"error": message}), 400
 
 @app.route('/api/boxes', methods=['GET'])
 def get_all_boxes():
@@ -85,11 +56,6 @@ def delete_box(box_id):
         return jsonify({"message": message})
     else:
         return jsonify({"error": message}), 404
-
-# ==========================================
-# ENDPOINTS POUR LES CAPTEURS ET RELAIS - SUPPRIMÉS
-# Les capteurs et relais changent automatiquement via la simulation
-# ==========================================
 
 # ==========================================
 # ENDPOINTS POUR LA SIMULATION
@@ -168,7 +134,6 @@ def get_system_status():
 
 @app.route('/')
 def index():
-   
     return """
     <html>
         <head><title>Simulateur IoT</title></head>
@@ -178,7 +143,6 @@ def index():
             <ul>
                 <li><code>GET /api/boxes</code> - Liste toutes les box</li>
                 <li><code>POST /api/boxes</code> - Crée une nouvelle box</li>
-                <li><code>POST /api/boxes/meteo</code> - Crée une box météo réelle</li>
                 <li><code>GET /api/boxes/{id}</code> - Détails d'une box</li>
                 <li><code>DELETE /api/boxes/{id}</code> - Supprime une box</li>
                 <li><code>POST /api/boxes/{id}/simulation/start</code> - Démarre simulation</li>
@@ -215,6 +179,5 @@ if __name__ == '__main__':
     })
     
     print("📍 Accès: http://localhost:5000")
-    
     
     app.run(debug=True, host='0.0.0.0', port=5000)

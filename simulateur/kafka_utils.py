@@ -1,36 +1,15 @@
-# kafka_utils.py - VERSION DOCKER COMPATIBLE
+# kafka_utils.py - 
 from kafka import KafkaProducer
-import os
-import time
-
-def get_kafka_servers():
-    """Retourne la configuration Kafka selon l'environnement"""
-    # Si on est dans Docker (variable d'environnement définie)
-    if os.getenv('KAFKA_BOOTSTRAP_SERVERS'):
-        servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS')
-        print(f"🐳 Mode Docker détecté - Kafka: {servers}")
-        return servers
-    else:
-        # Mode local
-        servers = 'localhost:9092'
-        print(f"💻 Mode local détecté - Kafka: {servers}")
-        return servers
 
 # Configuration du producteur Kafka
 def create_producer():
-    """Crée et retourne un producteur Kafka avec configuration adaptative"""
-    bootstrap_servers = get_kafka_servers()
-    
+    """Crée et retourne un producteur Kafka"""
     try:
         producer = KafkaProducer(
-            bootstrap_servers=[bootstrap_servers],
-            value_serializer=lambda v: v.encode('utf-8'),
-            # Ajout de retry et timeout pour Docker
-            retries=5,
-            request_timeout_ms=30000,
-            retry_backoff_ms=1000
+            bootstrap_servers=['localhost:9092'],
+            value_serializer=lambda v: v.encode('utf-8')
         )
-        print(f"✅ Connexion à Kafka établie ({bootstrap_servers})")
+        print("✅ Connexion à Kafka établie (localhost:9092)")
         return producer
     except Exception as e:
         print(f"❌ Impossible de se connecter à Kafka: {e}")
@@ -81,9 +60,8 @@ def fermer_producer():
 def tester_connexion():
     """Test la connexion Kafka"""
     try:
-        servers = get_kafka_servers()
         test_producer = KafkaProducer(
-            bootstrap_servers=[servers],
+            bootstrap_servers=['localhost:9092'],
             request_timeout_ms=5000
         )
         test_producer.close()

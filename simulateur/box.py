@@ -9,7 +9,7 @@ class BoxSimulateur:
         self.creation_time = time.time()
         
         # Configuration par défaut
-        self.capteurs = {}
+        self.capteurs = {} 
         self.relais = {}
         self.compteurs = {}
         
