@@ -1,13 +1,25 @@
-# box_manager.py - 
+# box_manager.py - VERSION AVEC MONGODB
 
 import time
 import threading
 try:
     from .box import BoxSimulateur
     from .kafka_utils import envoyer_trame
+    # Import MongoDB
+    import sys
+    import os
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, project_root)
+    from mongo.mongo_utils import mongo_manager
 except ImportError:
     from box import BoxSimulateur
     from kafka_utils import envoyer_trame
+    # Import MongoDB
+    import sys
+    import os
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, project_root)
+    from mongo.mongo_utils import mongo_manager
 
 class BoxManager:
     def __init__(self):
@@ -17,7 +29,7 @@ class BoxManager:
         self.simulation_intervals = {}  # Intervalles de simulation
     
     def create_box(self, box_id, config=None):
-        """Crée une nouvelle box"""
+        """Crée une nouvelle box et la sauvegarde dans MongoDB"""
         if box_id in self.boxes:
             return False, "Une box avec cet ID existe déjà"
         
@@ -26,6 +38,19 @@ class BoxManager:
             self.boxes[box_id] = box
             self.running[box_id] = False
             self.simulation_intervals[box_id] = 5  # 5 secondes par défaut
+            
+            # ===== NOUVEAU: Sauvegarder dans MongoDB =====
+            if mongo_manager.is_connected():
+                mongo_manager.save_box_metadata(box_id, config or {}, status="created")
+                mongo_manager.log_event(
+                    level="INFO",
+                    source="box_manager", 
+                    message=f"Box {box_id} créée",
+                    box_id=box_id,
+                    action="create_box"
+                )
+            else:
+                print(f"⚠️ MongoDB non connecté - Box {box_id} créée seulement en mémoire")
             
             return True, f"Box {box_id} créée avec succès"
         except Exception as e:
@@ -39,11 +64,22 @@ class BoxManager:
         # Arrêter la simulation si active
         self.stop_simulation(box_id)
         
-        # Supprimer la box
+        # Supprimer de la mémoire
         del self.boxes[box_id]
         del self.running[box_id]
         if box_id in self.simulation_intervals:
             del self.simulation_intervals[box_id]
+        
+        # ===== NOUVEAU: Supprimer de MongoDB =====
+        if mongo_manager.is_connected():
+            mongo_manager.delete_box(box_id)
+            mongo_manager.log_event(
+                level="INFO",
+                source="box_manager",
+                message=f"Box {box_id} supprimée",
+                box_id=box_id,
+                action="delete_box"
+            )
         
         return True, f"Box {box_id} supprimée"
     
@@ -98,6 +134,18 @@ class BoxManager:
         intervalle = self.simulation_intervals.get(box_id, 5)
         self.running[box_id] = True
         
+        # ===== NOUVEAU: Log démarrage simulation =====
+        if mongo_manager.is_connected():
+            mongo_manager.update_box_status(box_id, "simulation_active")
+            mongo_manager.log_event(
+                level="INFO",
+                source="box_manager",
+                message=f"Simulation démarrée pour {box_id}",
+                box_id=box_id,
+                action="start_simulation",
+                extra_data={"intervalle": intervalle, "evolution": evolution}
+            )
+        
         # Thread de simulation avec évolution
         def simulation_task():
             while self.running.get(box_id, False):
@@ -116,6 +164,17 @@ class BoxManager:
                 except Exception as e:
                     print(f"Erreur simulation {box_id}: {e}")
                     self.running[box_id] = False
+                    
+                    # Log erreur
+                    if mongo_manager.is_connected():
+                        mongo_manager.log_event(
+                            level="ERROR",
+                            source="box_manager",
+                            message=f"Erreur simulation {box_id}: {str(e)}",
+                            box_id=box_id,
+                            action="simulation_error",
+                            extra_data={"error": str(e)}
+                        )
                     break
         
         thread = threading.Thread(target=simulation_task)
@@ -135,6 +194,17 @@ class BoxManager:
             return False, "Aucune simulation en cours"
         
         self.running[box_id] = False
+        
+        # ===== NOUVEAU: Log arrêt simulation =====
+        if mongo_manager.is_connected():
+            mongo_manager.update_box_status(box_id, "simulation_stopped")
+            mongo_manager.log_event(
+                level="INFO",
+                source="box_manager",
+                message=f"Simulation arrêtée pour {box_id}",
+                box_id=box_id,
+                action="stop_simulation"
+            )
         
         if box_id in self.simulation_threads:
             try:
@@ -177,6 +247,17 @@ class BoxManager:
             success = envoyer_trame(trame)
             if not success:
                 return False, "Erreur lors de l'envoi"
+            
+            # ===== NOUVEAU: Log envoi trame =====
+            if mongo_manager.is_connected():
+                mongo_manager.log_event(
+                    level="INFO",
+                    source="box_manager",
+                    message=f"Trame {trame_type} envoyée pour {box_id}",
+                    box_id=box_id,
+                    action="send_trame",
+                    extra_data={"type": trame_type, "trame": trame}
+                )
             
             evolution_info = " (après évolution)" if evolution_avant else ""
             return True, {"message": f"Trame {trame_type} envoyée{evolution_info}", "trame": trame}
