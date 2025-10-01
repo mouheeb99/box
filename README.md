@@ -6,7 +6,7 @@ Le projet implémente une architecture distribuée basée sur :
 - Flask  : API REST pour le contrôle des simulations
 - Apache Kafka : Communication asynchrone et messagerie
 - Mongodb : Persistance des données et logs centralisés
-
+![collection sensorDATA](img/orga.png)
 Collections mongo:
 Le système utilise 3 collections dans la base iot_project :
 
@@ -40,9 +40,9 @@ démarrer kafka
 
 lancer api
 ![demarrage kafka](img/api.png)
-L'API sera accessible sur : http://localhost:5000
+L'API sera accessible sur : "http://localhost:5000"
 demarrer le consumemongodb
-crer un boitier virtuel
+Crer un boitier virtuel
 ![test_creation_postman](img/POST.png)
 une fois requete est validé le système sauvegarde automatiquement les métadonnées du boîtier dans la collection MongoDB boxes
 ![collection boxes](img/vuecollectionboxes.png)
@@ -60,8 +60,8 @@ Une fois la simulation active, le consommateur MongoDB traite en temps réel les
 
 - exemple de detection de deconenexion kafka:
  Le système fonctionne normalement avec envoi et réception des messages. Ensuite nousprocédons à l’arrêt du service Kafka en utilisant:
-fig
+![collection sensorDATA](img/arretkafka.png)
 le système de logs  enregistre l’évènement de panne dans la collection logs.
-fig
+![collection sensorDATA](img/arretkafka.png)
 
 
