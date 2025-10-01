@@ -1,42 +1,42 @@
 # Simulateur de Boîtiers Intelligents
 
-## 🏗️ Architecture
+  Architecture
 
 Le projet implémente une architecture distribuée basée sur :
-- **Python** : Logique métier et algorithmes de simulation
-- **Flask** : API REST pour le contrôle des simulations
-- **Apache Kafka** : Communication asynchrone et messagerie
-- **MongoDB** : Persistance des données et logs centralisés
+- *Python* : Logique métier et algorithmes de simulation
+- *Flask* : API REST pour le contrôle des simulations
+- *Apache Kafka* : Communication asynchrone et messagerie
+- *MongoDB* : Persistance des données et logs centralisés
 
 ![Architecture](img/orga.png)
 
-## 📊 Collections MongoDB
+# Collections MongoDB
 
 Le système utilise 3 collections dans la base `iot_project` :
-- **boxes** : Métadonnées des boîtiers (configuration, statut, timestamps)
-- **sensor_data** : Mesures en temps réel (capteurs, relais, compteurs)
-- **logs** : Sauvegarde des événements système (créations, erreurs, démarrages, déconnexion réseau)
+- *boxes* : Métadonnées des boîtiers (configuration, statut, timestamps)
+- *sensor_data* : Mesures en temps réel (capteurs, relais, compteurs)
+- *logs* : Sauvegarde des événements système (créations, erreurs, démarrages, déconnexion réseau)
 
-## 🔌 Endpoints API
+# Endpoints API
 
-### Gestion des boîtiers
+##Gestion des boîtiers
 - `GET /api/boxes` - Liste tous les boîtiers
 - `POST /api/boxes` - Créer un nouveau boîtier
 - `GET /api/boxes/{id}` - Détails d'un boîtier
 - `DELETE /api/boxes/{id}` - Supprimer un boîtier
 
-### Contrôle des simulations
+# Contrôle des simulations
 - `POST /api/boxes/{id}/simulation/start` - Démarrer une simulation
 - `POST /api/boxes/{id}/simulation/stop` - Arrêter une simulation
 
-### Informations système
+# Informations système
 - `GET /api/status` - Statut global du système
 - `GET /api/capteurs/available` - Types de capteurs disponibles
 - `GET /api/compteurs/available` - Types de compteurs disponibles
 
 ![API Interface](img/apii.png)
 
-## 🚀 Exemple d'utilisation
+##  Exemple d'utilisation
 
 ### 1. Démarrer Kafka
 ![Démarrage Kafka](img/image.png)
@@ -51,7 +51,7 @@ L'API sera accessible sur : `http://localhost:5000`
 ### 4. Créer un boîtier virtuel
 ![Test création Postman](img/POST.png)
 
-Une fois la requête validée, le système sauvegarde automatiquement les métadonnées du boîtier dans la collection MongoDB `boxes`.
+Une fois la requête validée, le système sauvegarde automatiquement les données du boîtier dans la collection MongoDB `boxes`.
 
 ![Collection boxes](img/vuecollectionboxes.png)
 
@@ -73,9 +73,9 @@ Une fois la simulation active, le consumer MongoDB traite en temps réel les tra
 
 ![Collection sensor_data](img/sim3.png)
 
-## 🔧 Exemple de détection de déconnexion Kafka
+##  Exemple de détection de déconnexion Kafka
 
-Le système fonctionne normalement avec envoi et réception des messages. Ensuite nous procédons à l'arrêt du service Kafka.
+Le système fonctionne normalement avec envoi et réception des messages. Ensuite nous procédons à l'arrêt du service Kafka en utulisant :
 
 ![Arrêt Kafka](img/arretkafka.png)
 
