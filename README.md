@@ -7,6 +7,7 @@ Le projet implémente une architecture distribuée basée sur :
 - Apache Kafka : Communication asynchrone et messagerie
 - Mongodb : Persistance des données et logs centralisés
 ![collection sensorDATA](img/orga.png)
+
 Collections mongo:
 Le système utilise 3 collections dans la base iot_project :
 
