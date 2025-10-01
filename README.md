@@ -1,68 +1,85 @@
-#simulateur de boitiers intelligent
+# Simulateur de Boîtiers Intelligents
 
-Architecture:
+## 🏗️ Architecture
+
 Le projet implémente une architecture distribuée basée sur :
-- python : Logique métier et algorithmes de simulation
-- Flask  : API REST pour le contrôle des simulations
-- Apache Kafka : Communication asynchrone et messagerie
-- Mongodb : Persistance des données et logs centralisés
-![collection sensorDATA](img/orga.png)
+- **Python** : Logique métier et algorithmes de simulation
+- **Flask** : API REST pour le contrôle des simulations
+- **Apache Kafka** : Communication asynchrone et messagerie
+- **MongoDB** : Persistance des données et logs centralisés
 
-Collections mongo:
-Le système utilise 3 collections dans la base iot_project :
+![Architecture](img/orga.png)
 
-boxes : Métadonnées des boîtiers (configuration, statut, timestamps)
-sensor_data : Mesures en temps réel (capteurs, relais, compteurs)
-logs :sauvegarde des événements système (créations, erreurs, démarrages,deconnesion reseau)
+## 📊 Collections MongoDB
 
-Endpoint API:
-- Gestion des boîtiers
+Le système utilise 3 collections dans la base `iot_project` :
+- **boxes** : Métadonnées des boîtiers (configuration, statut, timestamps)
+- **sensor_data** : Mesures en temps réel (capteurs, relais, compteurs)
+- **logs** : Sauvegarde des événements système (créations, erreurs, démarrages, déconnexion réseau)
 
-GET /api/boxes - Liste tous les boîtiers
-POST /api/boxes - Créer un nouveau boîtier
-GET /api/boxes/{id} - Détails d'un boîtier
-DELETE /api/boxes/{id} - Supprimer un boîtier
+## 🔌 Endpoints API
 
-- Contrôle des simulations
+### Gestion des boîtiers
+- `GET /api/boxes` - Liste tous les boîtiers
+- `POST /api/boxes` - Créer un nouveau boîtier
+- `GET /api/boxes/{id}` - Détails d'un boîtier
+- `DELETE /api/boxes/{id}` - Supprimer un boîtier
 
-POST /api/boxes/{id}/simulation/start - Démarrer une simulation
-POST /api/boxes/{id}/simulation/stop - Arrêter une simulation
+### Contrôle des simulations
+- `POST /api/boxes/{id}/simulation/start` - Démarrer une simulation
+- `POST /api/boxes/{id}/simulation/stop` - Arrêter une simulation
 
-- Informations système
+### Informations système
+- `GET /api/status` - Statut global du système
+- `GET /api/capteurs/available` - Types de capteurs disponibles
+- `GET /api/compteurs/available` - Types de compteurs disponibles
 
-GET /api/status - Statut global du système
-GET /api/capteurs/available - Types de capteurs disponibles
-GET /api/compteurs/available - Types de compteurs disponibles
-![demarrage kafka](img/apii.png)
+![API Interface](img/apii.png)
 
-- exemple dutulisation
-démarrer kafka 
-![demarrage kafka](img/image.png)
+## 🚀 Exemple d'utilisation
 
-lancer api
-![demarrage kafka](img/api.png)
-L'API sera accessible sur : "http://localhost:5000"
-demarrer le consumemongodb
-Crer un boitier virtuel
-![test_creation_postman](img/POST.png)
-une fois requete est validé le système sauvegarde automatiquement les métadonnées du boîtier dans la collection MongoDB boxes
-![collection boxes](img/vuecollectionboxes.png)
-Parallèlement, le système enregistre l'événement de création dans la collection logs pour assurer la traçabilité des opérations.
-![collections logs](img/vuecollectionlogs.png)
-demarrage de simulation:
- le lancement d’une simulation via une requête POST adressée à l’endpoint
-/api/boxes/BOX_002/simulation/start avec un intervalle configuré
-![demarrage simulation](img/sim1.png)
-Simultanément au démarrage de la simulation, l’événement correspondant est enregistré dans la collection log   afin d’assurer la traçabilité de cette opération.
-![sauvegarde de debut de simulation ](img/SIM2.png)
-Une fois la simulation active, le consommateur MongoDB traite en temps réel les trames reçues depuis Kafka. Il analyse automatiquement les données, et les sauvegarde dans la collection sensor_data
-![collection sensorDATA](img/sim3.png)
+### 1. Démarrer Kafka
+![Démarrage Kafka](img/image.png)
 
+### 2. Lancer l'API
+![Démarrage API](img/api.png)
 
-- exemple de detection de deconenexion kafka:
- Le système fonctionne normalement avec envoi et réception des messages. Ensuite nousprocédons à l’arrêt du service Kafka en utilisant:
-![collection sensorDATA](img/arretkafka.png)
-le système de logs  enregistre l’évènement de panne dans la collection logs.
-![collection sensorDATA](img/arretkafka.png)
+L'API sera accessible sur : `http://localhost:5000`
 
+### 3. Démarrer le consumer MongoDB
+
+### 4. Créer un boîtier virtuel
+![Test création Postman](img/POST.png)
+
+Une fois la requête validée, le système sauvegarde automatiquement les métadonnées du boîtier dans la collection MongoDB `boxes`.
+
+![Collection boxes](img/vuecollectionboxes.png)
+
+Parallèlement, le système enregistre l'événement de création dans la collection `logs` pour assurer la traçabilité des opérations.
+
+![Collection logs](img/vuecollectionlogs.png)
+
+### 5. Démarrage de simulation
+
+Le lancement d'une simulation via une requête POST adressée à l'endpoint `/api/boxes/BOX_002/simulation/start` avec un intervalle configuré.
+
+![Démarrage simulation](img/sim1.png)
+
+Simultanément au démarrage de la simulation, l'événement correspondant est enregistré dans la collection `logs` afin d'assurer la traçabilité de cette opération.
+
+![Sauvegarde début simulation](img/SIM2.png)
+
+Une fois la simulation active, le consumer MongoDB traite en temps réel les trames reçues depuis Kafka. Il analyse automatiquement les données et les sauvegarde dans la collection `sensor_data`.
+
+![Collection sensor_data](img/sim3.png)
+
+## 🔧 Exemple de détection de déconnexion Kafka
+
+Le système fonctionne normalement avec envoi et réception des messages. Ensuite nous procédons à l'arrêt du service Kafka.
+
+![Arrêt Kafka](img/arretkafka.png)
+
+Le système de logs enregistre l'événement de panne dans la collection `logs`.
+
+![Erreur Kafka](img/KAFKAERR.png)
 
