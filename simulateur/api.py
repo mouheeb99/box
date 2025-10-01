@@ -161,8 +161,8 @@ def index():
 # ==========================================
 
 if __name__ == '__main__':
-    print("🚀 Démarrage du serveur API...")
-    print("✅ Connexion à Kafka établie (localhost:9092)")
+    print(" Démarrage du serveur API...")
+    print(" Connexion à Kafka établie (localhost:9092)")
     
     # Créer quelques box par défaut pour les tests
     box_manager.create_box("box_001", {
@@ -170,13 +170,7 @@ if __name__ == '__main__':
         "nb_relais": 2
     })
     
-    box_manager.create_box("box_002", {
-        "capteurs": ["HT", "HM", "LM", "PR"],
-        "valeurs": {"HT": 28.5, "HM": 65.0, "LM": 75, "PR": 1},
-        "nb_relais": 3,
-        "etats_relais": {"1": 1, "2": 0, "3": 1},
-        "compteurs": {"EC": 1500, "WC": 350}
-    })
+  
     
     print("📍 Accès: http://localhost:5000")
     
