@@ -163,6 +163,8 @@ def index():
         <head><title>Simulateur IoT</title></head>
         <body>
             <h1>🏭 Simulateur de Box IoT</h1>
+            <h2>🔥 Consumer MongoDB actif en arrière-plan</h2>
+            <p>Les trames sont automatiquement sauvegardées dans MongoDB</p>
             <h2>API Endpoints:</h2>
             <ul>
                 <li><code>GET /api/boxes</code> - Liste toutes les box</li>
@@ -193,13 +195,13 @@ if __name__ == '__main__':
         "capteurs": ["HT", "HM", "FM"],
         "nb_relais": 2,
         "compteurs": {
-            "EC": 1200,   
-            "WC": 5000   
-            
+            "EC": 1200,    # Énergie: 1200 kWh
+            "WC": 5000,    # Eau: 5000 L
+            "GC": 300      # Gaz: 300 m³
         }
     })
     
     print("📍 Accès: http://localhost:5000")
-    print("💾 Consumer MongoDB actif")
+    print("💾 Consumer MongoDB actif - Sauvegarde automatique activée")
     
     app.run(debug=True, host='0.0.0.0', port=5000)

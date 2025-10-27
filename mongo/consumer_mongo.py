@@ -1,4 +1,4 @@
-# consumer_mongo.py - VERSION INTÉGRÉE À L'API (tourne en permanence)
+# consumer_mongo.py - VERSION DOCKER (intégrée à l'API)
 import sys
 import os
 
@@ -12,6 +12,9 @@ import json
 
 # Import du module MongoDB
 from mongo.mongo_utils import mongo_manager
+
+# Lire la config depuis l'environnement Docker
+KAFKA_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 
 def parser_trame_3F(trame):
     """Parse une trame 3F et retourne un objet structuré"""
@@ -48,7 +51,7 @@ def demarrer_consumer_mongo():
     """Démarre un consumer Kafka qui sauvegarde dans MongoDB (tourne indéfiniment)"""
     
     print("🔥 Consumer MongoDB - Simulateur box")
-    print("📡 Connexion à localhost:9092...")
+    print(f"📡 Connexion à {KAFKA_SERVERS}...")
     print("💾 Sauvegarde automatique dans MongoDB")
     print("-" * 60)
     print("⏳ En attente de trames...\n")
@@ -61,7 +64,7 @@ def demarrer_consumer_mongo():
     try:
         consumer = KafkaConsumer(
             'simulateur_topic',
-            bootstrap_servers=['localhost:9092'],
+            bootstrap_servers=[KAFKA_SERVERS],
             auto_offset_reset='earliest',
             enable_auto_commit=True,
             group_id='simulateur-mongo-group',
@@ -113,7 +116,7 @@ def demarrer_consumer_mongo():
                             print(f"⚡ Relais: {relais_str}")
                             
                         if data['compteurs']:
-                            compteurs_str = ", ".join([f"{k}={v}" for k, v in data['compteurs'].items()])
+                            compteurs_str = ", ".join([f"{k}={v}" for k, v in data['compteurs'].items()")
                             print(f"📈 Compteurs: {compteurs_str}")
                     else:
                         count_errors += 1
