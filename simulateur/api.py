@@ -1,15 +1,14 @@
-# api.py - VERSION AVEC CONSUMER MONGODB INTÉGRÉ
+# api.py - VERSION DOCKER
 from flask import Flask, request, jsonify
-from box_manager import box_manager
 import threading
 import sys
 import os
 
-# Ajouter le dossier parent au PYTHONPATH
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
+# ✅ Ajouter le répertoire courant au path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Import du consumer MongoDB
+# Imports
+from box_manager import box_manager
 from mongo.consumer_mongo import demarrer_consumer_mongo
 
 app = Flask(__name__)
@@ -158,22 +157,32 @@ def get_system_status():
 
 @app.route('/')
 def index():
-    return """
+    kafka_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+    mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
+    
+    return f"""
     <html>
-        <head><title>Simulateur IoT</title></head>
+        <head><title>Simulateur IoT - Docker</title></head>
         <body>
-            <h1>🏭 Simulateur de Box IoT</h1>
+            <h1>🏭 Simulateur de Box IoT (Docker)</h1>
             <h2>🔥 Consumer MongoDB actif en arrière-plan</h2>
             <p>Les trames sont automatiquement sauvegardées dans MongoDB</p>
+            
+            <h3>📊 Configuration:</h3>
+            <ul>
+                <li>Kafka: {kafka_servers}</li>
+                <li>MongoDB: {mongo_uri}</li>
+            </ul>
+            
             <h2>API Endpoints:</h2>
             <ul>
                 <li><code>GET /api/boxes</code> - Liste toutes les box</li>
                 <li><code>POST /api/boxes</code> - Crée une nouvelle box</li>
-                <li><code>GET /api/boxes/{id}</code> - Détails d'une box</li>
-                <li><code>DELETE /api/boxes/{id}</code> - Supprime une box</li>
-                <li><code>POST /api/boxes/{id}/simulation/start</code> - Démarre simulation</li>
-                <li><code>POST /api/boxes/{id}/simulation/stop</code> - Arrête simulation</li>
-                <li><code>POST /api/boxes/{id}/trames/{type}</code> - Envoie trame manuelle</li>
+                <li><code>GET /api/boxes/{{id}}</code> - Détails d'une box</li>
+                <li><code>DELETE /api/boxes/{{id}}</code> - Supprime une box</li>
+                <li><code>POST /api/boxes/{{id}}/simulation/start</code> - Démarre simulation</li>
+                <li><code>POST /api/boxes/{{id}}/simulation/stop</code> - Arrête simulation</li>
+                <li><code>POST /api/boxes/{{id}}/trames/{{type}}</code> - Envoie trame manuelle</li>
                 <li><code>GET /api/capteurs/available</code> - Types de capteurs disponibles</li>
                 <li><code>GET /api/compteurs/available</code> - Types de compteurs disponibles</li>
                 <li><code>GET /api/status</code> - Statut global du système</li>
@@ -187,8 +196,15 @@ def index():
 # ==========================================
 
 if __name__ == '__main__':
-    print("🚀 Démarrage du serveur API...")
-    print("✅ Connexion à Kafka établie (localhost:9092)")
+    print("🚀 Démarrage du serveur API (Docker)...")
+    
+    # Afficher la configuration
+    kafka_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+    mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
+    
+    print(f"✅ Configuration:")
+    print(f"   - Kafka: {kafka_servers}")
+    print(f"   - MongoDB: {mongo_uri}")
     
     # Créer quelques box par défaut pour les tests AVEC COMPTEURS
     box_manager.create_box("box_001", {
@@ -201,7 +217,9 @@ if __name__ == '__main__':
         }
     })
     
-    print("📍 Accès: http://localhost:5000")
+    print("📍 API disponible sur le port 5000")
     print("💾 Consumer MongoDB actif - Sauvegarde automatique activée")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # ✅ Configuration pour Docker
+    port = int(os.getenv('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

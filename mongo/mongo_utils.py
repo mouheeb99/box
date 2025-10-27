@@ -1,17 +1,23 @@
+# mongo_utils.py - VERSION DOCKER
+import os
 from pymongo import MongoClient
 from datetime import datetime
 import json
 
 class MongoManager:
-    def __init__(self, uri="mongodb://localhost:27017", db_name="iot_project"):
+    def __init__(self, uri=None, db_name="iot_project"):
         """Initialise la connexion MongoDB"""
+        # ✅ Lire depuis l'environnement Docker
+        if uri is None:
+            uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
+        
         try:
             self.client = MongoClient(uri)
             self.db = self.client[db_name]
             
             # Test de connexion
             self.client.admin.command('ping')
-            print(f"✅ Connexion MongoDB réussie - Database: {db_name}")
+            print(f"✅ Connexion MongoDB réussie - URI: {uri} - Database: {db_name}")
             
             # Références aux collections
             self.boxes_collection = self.db.boxes
@@ -20,6 +26,7 @@ class MongoManager:
             
         except Exception as e:
             print(f"❌ Erreur connexion MongoDB: {e}")
+            print(f"   URI utilisée: {uri}")
             self.client = None
             self.db = None
     

@@ -1,13 +1,15 @@
-# Python
+# ==========================================
+# PYTHON
+# ==========================================
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+# Distribution / packaging
 .Python
-env/
-venv/
-ENV/
-.venv
 build/
 develop-eggs/
 dist/
@@ -23,57 +25,207 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Tests
-tests/__pycache__/
-*.pyc
+# Virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+.tox/
+.nox/
 
-# IDE
+# ==========================================
+# IDE / EDITORS
+# ==========================================
+
+# VSCode
 .vscode/
+*.code-workspace
+
+# PyCharm / IntelliJ
 .idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
 *.swp
 *.swo
 *.swn
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ==========================================
+# OS
+# ==========================================
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
 
-# Git
-.git/
-.gitignore
-.gitattributes
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Docker
-.dockerignore
-docker-compose.yml
-docker-compose.*.yml
+# Linux
+*~
+.directory
+.Trash-*
 
-# Images et documentation
-img/
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.svg
-README.md
-docs/
+# ==========================================
+# DOCKER
+# ==========================================
 
-# Logs
+# Ne pas ignorer docker-compose.yml et Dockerfile
+# Mais ignorer les overrides locaux
+docker-compose.override.yml
+docker-compose.local.yml
+
+# Volumes Docker locaux (si définis en local)
+.docker/
+
+# ==========================================
+# LOGS
+# ==========================================
+
 *.log
 logs/
+*.log.*
 
-# Environment variables
+# ==========================================
+# ENVIRONMENT VARIABLES
+# ==========================================
+
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+*.env
 
-# Database
+# ==========================================
+# DATABASES
+# ==========================================
+
+# SQLite
 *.db
 *.sqlite
 *.sqlite3
 
-# Temporary files
+# MongoDB (si vous avez des dumps locaux)
+*.bson
+dump/
+
+# ==========================================
+# KAFKA / ZOOKEEPER DATA
+# ==========================================
+
+# Données Kafka locales (si lancé en local)
+kafka-logs/
+zookeeper-data/
+
+# ==========================================
+# TEMPORARY FILES
+# ==========================================
+
 *.tmp
 *.temp
+*.bak
+*.swp
 .cache/
+.temp/
+tmp/
+
+# ==========================================
+# DOCUMENTATION BUILD
+# ==========================================
+
+docs/_build/
+site/
+
+# ==========================================
+# JUPYTER NOTEBOOKS
+# ==========================================
+
+.ipynb_checkpoints/
+*.ipynb
+
+# ==========================================
+# SPECIFIC PROJECT FILES
+# ==========================================
+
+# Fichiers de test temporaires
+test_output/
+output/
+
+# Fichiers de données temporaires
+data/temp/
+*.csv.tmp
+
+# Fichiers de backup
+backup/
+*.backup
+
+# ==========================================
+# NODE (si vous ajoutez du frontend plus tard)
+# ==========================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ==========================================
+# CREDENTIALS / SECRETS
+# ==========================================
+
+# NE JAMAIS COMMITER
+credentials.json
+secrets.json
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# ==========================================
+# CI/CD
+# ==========================================
+
+.github/workflows/*.local.yml
+.gitlab-ci.local.yml
+
+# ==========================================
+# CUSTOM
+# ==========================================
+
+# Ajoutez ici vos exclusions personnelles
+# TODO.txt
+# NOTES.md

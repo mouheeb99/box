@@ -1,19 +1,17 @@
-# consumer_mongo.py - VERSION DOCKER (intégrée à l'API)
+# consumer_mongo.py - VERSION DOCKER
 import sys
 import os
-
-# Ajouter le dossier parent au PYTHONPATH
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
 from kafka import KafkaConsumer
 from datetime import datetime
 import json
 
+# Ajouter le répertoire parent au PYTHONPATH
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # Import du module MongoDB
 from mongo.mongo_utils import mongo_manager
 
-# Lire la config depuis l'environnement Docker
+# ✅ Lire la config depuis l'environnement Docker
 KAFKA_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 
 def parser_trame_3F(trame):
@@ -116,7 +114,7 @@ def demarrer_consumer_mongo():
                             print(f"⚡ Relais: {relais_str}")
                             
                         if data['compteurs']:
-                            compteurs_str = ", ".join([f"{k}={v}" for k, v in data['compteurs'].items()")
+                            compteurs_str = ", ".join([f"{k}={v}" for k, v in data['compteurs'].items()])
                             print(f"📈 Compteurs: {compteurs_str}")
                     else:
                         count_errors += 1
@@ -176,7 +174,6 @@ def demarrer_consumer_mongo():
     
     finally:
         # NE PAS fermer la connexion MongoDB car elle est partagée avec l'API
-        # mongo_manager.close_connection()  # ← Commenté pour garder la connexion active
         pass
 
 if __name__ == "__main__":
