@@ -1,8 +1,32 @@
-# api.py 
+# api.py - VERSION AVEC CONSUMER MONGODB INTÉGRÉ
 from flask import Flask, request, jsonify
 from box_manager import box_manager
+import threading
+import sys
+import os
+
+# Ajouter le dossier parent au PYTHONPATH
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
+# Import du consumer MongoDB
+from mongo.consumer_mongo import demarrer_consumer_mongo
 
 app = Flask(__name__)
+
+# ==========================================
+# DÉMARRAGE AUTOMATIQUE DU CONSUMER MONGODB
+# ==========================================
+
+def demarrer_consumer_en_arriere_plan():
+    """Démarre le consumer MongoDB dans un thread séparé"""
+    print("🔄 Démarrage du consumer MongoDB en arrière-plan...")
+    consumer_thread = threading.Thread(target=demarrer_consumer_mongo, daemon=True)
+    consumer_thread.start()
+    print("✅ Consumer MongoDB démarré en arrière-plan")
+
+# Démarrer le consumer au lancement de l'API
+demarrer_consumer_en_arriere_plan()
 
 # ==========================================
 # ENDPOINTS POUR LA GESTION DES BOX
@@ -161,17 +185,21 @@ def index():
 # ==========================================
 
 if __name__ == '__main__':
-    print(" Démarrage du serveur API...")
-    print(" Connexion à Kafka établie (localhost:9092)")
+    print("🚀 Démarrage du serveur API...")
+    print("✅ Connexion à Kafka établie (localhost:9092)")
     
-    # Créer quelques box par défaut pour les tests
+    # Créer quelques box par défaut pour les tests AVEC COMPTEURS
     box_manager.create_box("box_001", {
         "capteurs": ["HT", "HM", "FM"],
-        "nb_relais": 2
+        "nb_relais": 2,
+        "compteurs": {
+            "EC": 1200,   
+            "WC": 5000   
+            
+        }
     })
     
-  
-    
     print("📍 Accès: http://localhost:5000")
+    print("💾 Consumer MongoDB actif")
     
     app.run(debug=True, host='0.0.0.0', port=5000)

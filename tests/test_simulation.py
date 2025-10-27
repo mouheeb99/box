@@ -13,8 +13,8 @@ try:
         for box_id in boxes.keys():
             print(f"  - {box_id}")
     
-    # Étape 2: Démarrer simulation pour box_002
-    print("\n2️⃣ Démarrage simulation box_002 (intervalle 3 secondes)...")
+    # Étape 2: Démarrer simulation pour box_001
+    print("\n2️⃣ Démarrage simulation box_001 (intervalle 3 secondes)...")
     
     data = json.dumps({"intervalle": 5}).encode('utf-8')
     req = urllib.request.Request(
@@ -28,7 +28,7 @@ try:
         print(f"✅ {result['message']}")
     
     
-    time.sleep(180)
+    time.sleep(1800)
     
     print("\n3️⃣ Arrêt de la simulation...")
     req = urllib.request.Request(

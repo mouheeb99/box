@@ -1,4 +1,4 @@
-# consumer_mongo.py - Consumer Kafka qui sauvegarde dans MongoDB
+# consumer_mongo.py - VERSION INTÉGRÉE À L'API (tourne en permanence)
 import sys
 import os
 
@@ -45,13 +45,13 @@ def parser_trame_3F(trame):
     return {"box_id": box_id, "data": data}
 
 def demarrer_consumer_mongo():
-    """Démarre un consumer Kafka qui sauvegarde dans MongoDB"""
+    """Démarre un consumer Kafka qui sauvegarde dans MongoDB (tourne indéfiniment)"""
     
     print("🔥 Consumer MongoDB - Simulateur box")
     print("📡 Connexion à localhost:9092...")
     print("💾 Sauvegarde automatique dans MongoDB")
     print("-" * 60)
-    print("⏳ En attente de trames... (Ctrl+C pour arrêter)\n")
+    print("⏳ En attente de trames...\n")
     
     # Vérifier la connexion MongoDB
     if not mongo_manager.is_connected():
@@ -65,18 +65,20 @@ def demarrer_consumer_mongo():
             auto_offset_reset='earliest',
             enable_auto_commit=True,
             group_id='simulateur-mongo-group',
-            value_deserializer=lambda x: x.decode('utf-8'),
-            consumer_timeout_ms=1000
+            value_deserializer=lambda x: x.decode('utf-8')
+            # IMPORTANT: Pas de consumer_timeout_ms pour écouter indéfiniment
         )
         
         print("✅ Consumer MongoDB démarré avec succès!")
-        print("🔍 Écoute des messages Kafka...")
+        print("🔍 Écoute permanente des messages Kafka...")
+        print("=" * 60)
         
         # Compteurs
         count_total = 0
         count_saved = 0
         count_errors = 0
         
+        # BOUCLE INFINIE - Ne s'arrête jamais
         for message in consumer:
             count_total += 1
             timestamp = datetime.now().strftime("%H:%M:%S")
@@ -154,7 +156,7 @@ def demarrer_consumer_mongo():
             print("-" * 60)
     
     except KeyboardInterrupt:
-        print(f"\n🛑 Consumer MongoDB arrêté")
+        print(f"\n🛑 Consumer MongoDB arrêté par l'utilisateur")
         print(f"📊 Statistiques finales:")
         print(f"   - Total messages: {count_total}")
         print(f"   - Sauvegardés: {count_saved}")
@@ -170,8 +172,10 @@ def demarrer_consumer_mongo():
         )
     
     finally:
-        # Fermer la connexion MongoDB
-        mongo_manager.close_connection()
+        # NE PAS fermer la connexion MongoDB car elle est partagée avec l'API
+        # mongo_manager.close_connection()  # ← Commenté pour garder la connexion active
+        pass
 
 if __name__ == "__main__":
+    # Ce fichier peut toujours être lancé séparément si besoin
     demarrer_consumer_mongo()
