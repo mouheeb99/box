@@ -24,6 +24,9 @@ COPY mongo/__init__.py ./mongo/
 COPY mongo/consumer_mongo.py ./mongo/
 COPY mongo/mongo_utils.py ./mongo/
 
+# Copier tous les fichiers de test
+COPY tests/ ./tests
+
 # Variable d'environnement pour Python
 ENV PYTHONUNBUFFERED=1
 

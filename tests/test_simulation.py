@@ -28,7 +28,7 @@ try:
         print(f"✅ {result['message']}")
     
     
-    time.sleep(1800)
+    time.sleep(300)
     
     print("\n3️⃣ Arrêt de la simulation...")
     req = urllib.request.Request(
