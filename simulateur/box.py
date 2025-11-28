@@ -24,22 +24,22 @@ class BoxSimulateur:
         self.operateur = "orange.tn"
         self.etat_reseau = "CONNECTED"
         
-        # === NOUVEAU: Système d'évolution des valeurs ===
-        self.valeurs_base = {}  # Valeurs de référence pour l'évolution
-        self.tendances = {}     # Tendances actuelles des capteurs
+        # Système d'évolution des valeurs
+        self.valeurs_base = {}
+        self.tendances = {}
         self.derniere_evolution = time.time()
-        self.cycle_offset = random.uniform(0, 2 * math.pi)  # Pour varier les cycles
+        self.cycle_offset = random.uniform(0, 2 * math.pi)
         
         # Initialiser avec la configuration
         self.init_capteurs(config)
         self.init_relais(config)
         self.init_compteurs(config)
         
-        # === NOUVEAU: Initialiser le système d'évolution ===
+        # Initialiser le système d'évolution
         self.init_evolution()
     
     def init_capteurs(self, config=None):
-        """Initialise les capteurs selon la configuration"""
+        """Initialise les capteurs selon la configuration AVEC INDEXATION"""
         capteurs_disponibles = {
             "HT": {"nom": "Température", "valeur": 25.0, "unite": "°C"},
             "HM": {"nom": "Humidité", "valeur": 50.0, "unite": "%"},
@@ -52,14 +52,20 @@ class BoxSimulateur:
         
         # Si aucune config, utiliser température et humidité par défaut
         if not config or "capteurs" not in config:
-            self.capteurs["HT"] = capteurs_disponibles["HT"].copy()
-            self.capteurs["HM"] = capteurs_disponibles["HM"].copy()
+            self.capteurs["HT1"] = capteurs_disponibles["HT"].copy()
+            self.capteurs["HM1"] = capteurs_disponibles["HM"].copy()
             return
         
-        # Ajouter les capteurs spécifiés
-        for capteur_id in config["capteurs"]:
-            if capteur_id in capteurs_disponibles:
-                self.capteurs[capteur_id] = capteurs_disponibles[capteur_id].copy()
+        # ✅ MODIFICATION : Gérer les index pour capteurs multiples
+        capteur_counts = {}
+        for capteur_type in config["capteurs"]:
+            if capteur_type in capteurs_disponibles:
+                # Compter combien de ce type on a déjà
+                capteur_counts[capteur_type] = capteur_counts.get(capteur_type, 0) + 1
+                index = capteur_counts[capteur_type]
+                capteur_id = f"{capteur_type}{index}"  # Ex: HT1, HT2, HT3
+                
+                self.capteurs[capteur_id] = capteurs_disponibles[capteur_type].copy()
                 
                 # Appliquer valeurs personnalisées si spécifiées
                 if "valeurs" in config and capteur_id in config["valeurs"]:
@@ -98,7 +104,6 @@ class BoxSimulateur:
                 elif compteur_id == "GC":
                     self.compteurs["GC"] = {"nom": "Gaz", "valeur": valeur, "unite": "m³"}
     
-    # === NOUVEAU: Système d'évolution des valeurs ===
     def init_evolution(self):
         """Initialise le système d'évolution des valeurs"""
         # Sauvegarder les valeurs de base pour l'évolution
@@ -132,41 +137,43 @@ class BoxSimulateur:
         valeur_base = self.valeurs_base[capteur_id]
         valeur_actuelle = capteur["valeur"]
         
-        # Paramètres selon le type de capteur
-        if capteur_id == "HT":  # Température
-            amplitude = 3.0  # ±3°C
-            vitesse = 0.1    # Changement lent
-            bruit = 0.2      # Petit bruit
-        elif capteur_id == "HM":  # Humidité
-            amplitude = 10.0  # ±10%
-            vitesse = 0.15    # Un peu plus rapide
-            bruit = 0.5       # Plus de variation
-        elif capteur_id == "LM":  # Luminosité
-            amplitude = 20.0  # ±20%
-            vitesse = 0.2     # Changement plus rapide
-            bruit = 2.0       # Beaucoup de variation
-        elif capteur_id == "SD":  # Son
-            amplitude = 15.0  # ±15dB
-            vitesse = 0.3     # Changement rapide
-            bruit = 3.0       # Très variable
+        # Paramètres selon le type de capteur (extraire le type : HT1 -> HT)
+        capteur_type = ''.join([c for c in capteur_id if not c.isdigit()])
+        
+        if capteur_type == "HT":  # Température
+            amplitude = 3.0
+            vitesse = 0.1
+            bruit = 0.2
+        elif capteur_type == "HM":  # Humidité
+            amplitude = 10.0
+            vitesse = 0.15
+            bruit = 0.5
+        elif capteur_type == "LM":  # Luminosité
+            amplitude = 20.0
+            vitesse = 0.2
+            bruit = 2.0
+        elif capteur_type == "SD":  # Son
+            amplitude = 15.0
+            vitesse = 0.3
+            bruit = 3.0
         else:
             amplitude = 5.0
             vitesse = 0.1
             bruit = 0.5
         
-        # Cycle journalier (température suit l'heure)
+        # Cycle journalier
         heure_actuelle = time.localtime().tm_hour
         cycle_journalier = math.sin((heure_actuelle / 24) * 2 * math.pi + self.cycle_offset)
         variation_cyclique = cycle_journalier * amplitude * 0.3
         
         # Changement de tendance occasionnel
-        if random.random() < 0.05:  # 5% de chance
+        if random.random() < 0.05:
             self.tendances[capteur_id] = random.choice([-1, 0, 1])
         
-        # Valeur cible basée sur base + cycle + tendance
+        # Valeur cible
         valeur_cible = valeur_base + variation_cyclique + (self.tendances[capteur_id] * amplitude * 0.5)
         
-        # Mouvement vers la cible avec inertie
+        # Mouvement vers la cible
         difference = valeur_cible - valeur_actuelle
         mouvement = difference * vitesse * dt
         
@@ -177,13 +184,13 @@ class BoxSimulateur:
         nouvelle_valeur = valeur_actuelle + mouvement + bruit_aleatoire
         
         # Limites réalistes
-        if capteur_id == "HT":
+        if capteur_type == "HT":
             nouvelle_valeur = max(10, min(40, nouvelle_valeur))
-        elif capteur_id == "HM":
+        elif capteur_type == "HM":
             nouvelle_valeur = max(20, min(90, nouvelle_valeur))
-        elif capteur_id == "LM":
+        elif capteur_type == "LM":
             nouvelle_valeur = max(0, min(100, nouvelle_valeur))
-        elif capteur_id == "SD":
+        elif capteur_type == "SD":
             nouvelle_valeur = max(30, min(80, nouvelle_valeur))
         
         # Mettre à jour la valeur
@@ -194,74 +201,80 @@ class BoxSimulateur:
     
     def _evoluer_capteur_booleen(self, capteur_id, capteur):
         """Évolution des capteurs booléens"""
-        # Probabilités de changement selon le type
-        if capteur_id == "FM":  # Fumée - rare
+        capteur_type = ''.join([c for c in capteur_id if not c.isdigit()])
+        
+        if capteur_type == "FM":  # Fumée
             prob_changement = 0.01
-        elif capteur_id == "PR":  # Présence - occasionnel
+        elif capteur_type == "PR":  # Présence
             prob_changement = 0.03
-        elif capteur_id == "CT":  # Contact - rare
+        elif capteur_type == "CT":  # Contact
             prob_changement = 0.02
         else:
             prob_changement = 0.02
         
-        # Changement d'état
         if random.random() < prob_changement:
-            capteur["valeur"] = 1 - capteur["valeur"]  # Basculer 0->1 ou 1->0
+            capteur["valeur"] = 1 - capteur["valeur"]
     
     def _appliquer_correlations(self):
         """Applique les corrélations réalistes entre capteurs"""
-        # Corrélation température <-> humidité
-        if "HT" in self.capteurs and "HM" in self.capteurs:
-            temp = self.capteurs["HT"]["valeur"]
-            humidite_actuelle = self.capteurs["HM"]["valeur"]
-            
-            # Ajustement: quand il fait chaud, humidité tend à baisser
-            if temp > 28:
-                correction = -2
-            elif temp < 18:
-                correction = +3
-            else:
-                correction = 0
-            
-            nouvelle_humidite = humidite_actuelle + correction * 0.1
-            self.capteurs["HM"]["valeur"] = max(20, min(90, nouvelle_humidite))
+        # Corrélation température <-> humidité (pour TOUS les HT et HM)
+        ht_capteurs = [cid for cid in self.capteurs if cid.startswith("HT")]
+        hm_capteurs = [cid for cid in self.capteurs if cid.startswith("HM")]
         
-        # Impact des relais sur l'environnement
+        if ht_capteurs and hm_capteurs:
+            # Utiliser la moyenne des températures
+            temp_moyenne = sum(self.capteurs[htid]["valeur"] for htid in ht_capteurs) / len(ht_capteurs)
+            
+            for hm_id in hm_capteurs:
+                humidite_actuelle = self.capteurs[hm_id]["valeur"]
+                
+                if temp_moyenne > 28:
+                    correction = -2
+                elif temp_moyenne < 18:
+                    correction = +3
+                else:
+                    correction = 0
+                
+                nouvelle_humidite = humidite_actuelle + correction * 0.1
+                self.capteurs[hm_id]["valeur"] = max(20, min(90, nouvelle_humidite))
+        
+        # Impact des relais
         self._appliquer_impact_relais()
     
     def _appliquer_impact_relais(self):
         """Simule l'impact des relais sur l'environnement"""
         for relais_id, relais in self.relais.items():
-            if relais["etat"] == 1:  # Relais activé
-                # Simulation d'impact selon le type de relais
-                if relais_id == "RL1" and "HT" in self.capteurs:  # Chauffage
-                    self.capteurs["HT"]["valeur"] += 0.1
-                elif relais_id == "RL2" and "LM" in self.capteurs:  # Éclairage
-                    self.capteurs["LM"]["valeur"] = min(95, self.capteurs["LM"]["valeur"] + 5)
+            if relais["etat"] == 1:
+                if relais_id == "RL1":
+                    # Chauffage affecte TOUS les capteurs HT
+                    for capteur_id in self.capteurs:
+                        if capteur_id.startswith("HT"):
+                            self.capteurs[capteur_id]["valeur"] += 0.1
+                elif relais_id == "RL2":
+                    # Éclairage affecte TOUS les capteurs LM
+                    for capteur_id in self.capteurs:
+                        if capteur_id.startswith("LM"):
+                            self.capteurs[capteur_id]["valeur"] = min(95, self.capteurs[capteur_id]["valeur"] + 5)
     
     def _evoluer_compteurs(self, dt):
         """Évolution des compteurs (incrémentale)"""
-        # Les compteurs augmentent lentement
         for compteur_id, compteur in self.compteurs.items():
-            if compteur_id == "EC":  # Énergie
-                increment = random.uniform(0.001, 0.003) * dt  # kWh par seconde
+            if compteur_id == "EC":
+                increment = random.uniform(0.001, 0.003) * dt
                 compteur["valeur"] += increment
-            elif compteur_id == "WC":  # Eau
-                increment = random.uniform(0.01, 0.05) * dt  # L par seconde
+            elif compteur_id == "WC":
+                increment = random.uniform(0.01, 0.05) * dt
                 compteur["valeur"] += increment
-            elif compteur_id == "GC":  # Gaz
-                increment = random.uniform(0.0001, 0.0005) * dt  # m³ par seconde
+            elif compteur_id == "GC":
+                increment = random.uniform(0.0001, 0.0005) * dt
                 compteur["valeur"] += increment
             
-            # Arrondir les valeurs
             compteur["valeur"] = round(compteur["valeur"], 3)
     
-    # === Méthodes existantes (inchangées) ===
     def set_capteur_valeur(self, capteur_id, valeur):
         """Modifie manuellement la valeur d'un capteur"""
         if capteur_id in self.capteurs:
             self.capteurs[capteur_id]["valeur"] = valeur
-            # Mettre à jour la valeur de base pour l'évolution
             self.valeurs_base[capteur_id] = valeur
             return True
         return False
@@ -299,7 +312,7 @@ class BoxSimulateur:
             }
         }
         
-        # Copier les données des capteurs
+        # Copier les données des capteurs (AVEC INDEX)
         for capteur_id, capteur in self.capteurs.items():
             status["capteurs"][capteur_id] = {
                 "nom": capteur["nom"],
@@ -324,13 +337,11 @@ class BoxSimulateur:
         
         return status
     
-    # === GÉNÉRATION DE TRAMES (inchangée) ===
-    
     def generer_trame_3F(self):
-        """Génère une trame 3F (VALUES_SET)"""
+        """Génère une trame 3F (VALUES_SET) AVEC INDEX"""
         valeurs = []
         
-        # Ajouter capteurs
+        # Ajouter capteurs (AVEC INDEX : HT1, HT2, etc.)
         for capteur_id, capteur in self.capteurs.items():
             valeurs.append(f"{capteur_id}={capteur['valeur']}")
         

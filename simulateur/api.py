@@ -208,7 +208,7 @@ if __name__ == '__main__':
     
     # Créer quelques box par défaut pour les tests AVEC COMPTEURS
     box_manager.create_box("box_001", {
-        "capteurs": ["HT", "HM", "FM"],
+        "capteurs": ["HT", "HM", "FM", "HT"],
         "nb_relais": 2,
         "compteurs": {
             "EC": 1200,    # Énergie: 1200 kWh

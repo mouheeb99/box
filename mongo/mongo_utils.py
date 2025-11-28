@@ -1,4 +1,4 @@
-# mongo_utils.py - VERSION DOCKER
+# mongo_utils.py - VERSION DOCKER avec box_data et capteurs indexés
 import os
 from pymongo import MongoClient
 from datetime import datetime
@@ -19,9 +19,9 @@ class MongoManager:
             self.client.admin.command('ping')
             print(f"✅ Connexion MongoDB réussie - URI: {uri} - Database: {db_name}")
             
-            # Références aux collections
+            # ✅ MODIFICATION 1 : Renommer sensor_data → box_data
             self.boxes_collection = self.db.boxes
-            self.sensor_data_collection = self.db.sensor_data
+            self.box_data_collection = self.db.box_data
             self.logs_collection = self.db.logs
             
         except Exception as e:
@@ -44,11 +44,23 @@ class MongoManager:
             return False
         
         try:
+            # ✅ MODIFICATION 2 : Structure des capteurs avec index
+            capteurs_avec_index = []
+            if "capteurs" in config:
+                for capteur_type in config["capteurs"]:
+                    # Compter combien de ce type existent déjà
+                    existing_count = sum(1 for c in capteurs_avec_index if c["type"] == capteur_type)
+                    capteurs_avec_index.append({
+                        "type": capteur_type,
+                        "index": existing_count + 1,
+                        "id": f"{capteur_type}{existing_count + 1}"
+                    })
+            
             box_doc = {
                 "_id": box_id,
                 "nom": f"Box {box_id}",
                 "type": config.get("type", "standard"),
-                "capteurs": config.get("capteurs", []),
+                "capteurs": capteurs_avec_index,  # ✅ Nouveau format avec index
                 "nb_relais": config.get("nb_relais", 2),
                 "compteurs": list(config.get("compteurs", {}).keys()),
                 "created_at": datetime.now(),
@@ -118,19 +130,19 @@ class MongoManager:
             return False
     
     # ==========================================
-    # DONNÉES CAPTEURS
+    # DONNÉES CAPTEURS (box_data)
     # ==========================================
     
     def save_sensor_data(self, trame_data):
-        """Sauvegarde les données d'une trame 3F"""
+        """Sauvegarde les données d'une trame 3F dans box_data"""
         if not self.is_connected():
             return False
         
         try:
-            # Extraire les informations de la trame
             box_id = trame_data.get("box_id")
             data = trame_data.get("data", {})
             
+            # ✅ MODIFICATION 3 : Sauvegarder dans box_data au lieu de sensor_data
             sensor_doc = {
                 "box_id": box_id,
                 "timestamp": datetime.now(),
@@ -140,7 +152,7 @@ class MongoManager:
                 "trame_brute": trame_data.get("trame_brute", "")
             }
             
-            result = self.sensor_data_collection.insert_one(sensor_doc)
+            result = self.box_data_collection.insert_one(sensor_doc)
             
             # Mettre à jour last_seen de la box
             self.update_box_status(box_id, "active")
@@ -164,11 +176,11 @@ class MongoManager:
         try:
             log_doc = {
                 "timestamp": datetime.now(),
-                "level": level,  # INFO, WARNING, ERROR
-                "source": source,  # api, consumer, box_manager
+                "level": level,
+                "source": source,
                 "message": message,
                 "box_id": box_id,
-                "action": action,  # create_box, start_simulation, etc.
+                "action": action,
                 "extra_data": extra_data or {}
             }
             
@@ -192,7 +204,6 @@ class MongoManager:
         try:
             box_doc = self.boxes_collection.find_one({"_id": box_id})
             if box_doc:
-                # Convertir ObjectId en string pour JSON
                 box_doc["_id"] = str(box_doc["_id"])
                 box_doc["created_at"] = box_doc["created_at"].isoformat()
                 box_doc["last_seen"] = box_doc["last_seen"].isoformat()
@@ -211,7 +222,6 @@ class MongoManager:
         try:
             boxes = list(self.boxes_collection.find())
             
-            # Convertir pour JSON
             for box in boxes:
                 box["_id"] = str(box["_id"])
                 box["created_at"] = box["created_at"].isoformat()
@@ -224,19 +234,18 @@ class MongoManager:
             return []
     
     def get_sensor_history(self, box_id, limit=100):
-        """Récupère l'historique des capteurs d'une box"""
+        """Récupère l'historique des capteurs d'une box depuis box_data"""
         if not self.is_connected():
             return []
         
         try:
             history = list(
-                self.sensor_data_collection
+                self.box_data_collection
                 .find({"box_id": box_id})
                 .sort("timestamp", -1)
                 .limit(limit)
             )
             
-            # Convertir pour JSON
             for record in history:
                 record["_id"] = str(record["_id"])
                 record["timestamp"] = record["timestamp"].isoformat()

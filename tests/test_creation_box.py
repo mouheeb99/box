@@ -8,9 +8,16 @@ print("🧪 Test création de box...")
 print("\n1️⃣ Création d'une box simple:")
 nouvelle_box = {
     "id": "TEST_BOX",
-    "capteurs": ["HT", "HM"],
-    "nb_relais": 2
-}
+    
+        "capteurs": ["HT", "HM", "FM", "HT"],
+        "nb_relais": 2,
+        "compteurs": {
+            "EC": 1200,    # Énergie: 1200 kWh
+            "WC": 5000,    # Eau: 5000 L
+            "GC": 300      # Gaz: 300 m³
+        }
+    }
+
 
 try:
     response = requests.post(

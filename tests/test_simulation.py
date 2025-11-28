@@ -14,11 +14,11 @@ try:
             print(f"  - {box_id}")
     
     # Étape 2: Démarrer simulation pour box_001
-    print("\n2️⃣ Démarrage simulation box_001 (intervalle 3 secondes)...")
+    print("\n2️⃣ Démarrage simulation box_001 (intervalle 5 secondes)...")
     
     data = json.dumps({"intervalle": 5}).encode('utf-8')
     req = urllib.request.Request(
-        "http://127.0.0.1:5000/api/boxes/box_001/simulation/start",
+        "http://127.0.0.1:5000/api/boxes/TEST_BOX/simulation/start",
         data=data,
         headers={'Content-Type': 'application/json'}
     )
@@ -28,11 +28,11 @@ try:
         print(f"✅ {result['message']}")
     
     
-    time.sleep(300)
+    time.sleep(60)
     
     print("\n3️⃣ Arrêt de la simulation...")
     req = urllib.request.Request(
-        "http://127.0.0.1:5000/api/boxes/box_001/simulation/stop",
+        "http://127.0.0.1:5000/api/boxes/TEST_BOX/simulation/stop",
         data=b'{}',
         headers={'Content-Type': 'application/json'}
     )

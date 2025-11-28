@@ -1,4 +1,4 @@
-# consumer_mongo.py - VERSION DOCKER
+# consumer_mongo.py - VERSION DOCKER AVEC INDEXATION
 import sys
 import os
 from kafka import KafkaConsumer
@@ -15,7 +15,7 @@ from mongo.mongo_utils import mongo_manager
 KAFKA_SERVERS = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 
 def parser_trame_3F(trame):
-    """Parse une trame 3F et retourne un objet structuré"""
+    """Parse une trame 3F et retourne un objet structuré AVEC INDEX"""
     parts = trame.split(';')
     
     # Extraire box_id
@@ -32,15 +32,22 @@ def parser_trame_3F(trame):
             key = key.strip()
             value = value.strip()
             
+            # ✅ MODIFICATION : Supporter les capteurs indexés (HT1, HT2, etc.)
+            # Extraire le type de capteur (lettres) et l'index (chiffres)
+            capteur_type = ''.join([c for c in key if c.isalpha()])
+            
             # Classifier selon le préfixe
-            if key.startswith(('HT', 'HM', 'LM', 'FM', 'PR', 'CT', 'SD')):
+            if capteur_type in ['HT', 'HM', 'LM', 'FM', 'PR', 'CT', 'SD']:
+                # Capteurs - garder l'ID complet avec index (HT1, HT2, etc.)
                 try:
                     data["capteurs"][key] = float(value)
                 except ValueError:
                     data["capteurs"][key] = value
-            elif key.startswith('RL'):
+            elif capteur_type == 'RL':
+                # Relais
                 data["relais"][key] = int(value)
-            elif key.startswith(('EC', 'WC', 'GC')):
+            elif capteur_type in ['EC', 'WC', 'GC']:
+                # Compteurs
                 data["compteurs"][key] = float(value)
     
     return {"box_id": box_id, "data": data}
