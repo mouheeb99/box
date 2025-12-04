@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur Trame 3A - Simulateur IoT</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-cpu"></i> Simulateur IoT
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link active" href="config3a.html">
+                            <i class="bi bi-gear"></i> Config 3A
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="container mt-4">
+        <!-- En-tête -->
+        <div class="row mb-4">
+            <div class="col">
+                <h2><i class="bi bi-gear"></i> Générateur de Trame 3A</h2>
+                <p class="text-muted">Créez et envoyez des trames de configuration</p>
+            </div>
+        </div>
+
+        <!-- Alertes -->
+        <div id="alert-container"></div>
+
+        <div class="row">
+            <!-- Formulaire -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-pencil"></i> Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Box ID -->
+                        <div class="mb-3">
+                            <label for="box-id" class="form-label">ID de la Box *</label>
+                            <input type="text" class="form-control" id="box-id" placeholder="Ex: BOX_001" required>
+                            <small class="text-muted">Identifiant unique de la box</small>
+                        </div>
+
+                        <!-- Type de configuration -->
+                        <div class="mb-4">
+                            <label class="form-label">Type de Configuration *</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="type" id="type-s" value="S" checked>
+                                <label class="btn btn-outline-primary" for="type-s">
+                                    <i class="bi bi-thermometer"></i> Capteurs (S)
+                                </label>
+
+                                <input type="radio" class="btn-check" name="type" id="type-o" value="O">
+                                <label class="btn btn-outline-primary" for="type-o">
+                                    <i class="bi bi-toggle-on"></i> Relais (O)
+                                </label>
+
+                                <input type="radio" class="btn-check" name="type" id="type-c" value="C">
+                                <label class="btn btn-outline-primary" for="type-c">
+                                    <i class="bi bi-speedometer"></i> Compteurs (C)
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Section Capteurs (S) -->
+                        <div id="section-capteurs" class="config-section">
+                            <h6 class="mb-3"><i class="bi bi-plus-circle"></i> Capteurs</h6>
+                            <div id="capteurs-container">
+                                <!-- Les capteurs seront ajoutés ici -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="ajouterCapteur()">
+                                <i class="bi bi-plus"></i> Ajouter un capteur
+                            </button>
+                        </div>
+
+                        <!-- Section Relais (O) -->
+                        <div id="section-relais" class="config-section" style="display: none;">
+                            <h6 class="mb-3"><i class="bi bi-plus-circle"></i> Relais</h6>
+                            <div id="relais-container">
+                                <!-- Les relais seront ajoutés ici -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="ajouterRelais()">
+                                <i class="bi bi-plus"></i> Ajouter un relais
+                            </button>
+                        </div>
+
+                        <!-- Section Compteurs (C) -->
+                        <div id="section-compteurs" class="config-section" style="display: none;">
+                            <h6 class="mb-3"><i class="bi bi-plus-circle"></i> Compteurs</h6>
+                            <div id="compteurs-container">
+                                <!-- Les compteurs seront ajoutés ici -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="ajouterCompteur()">
+                                <i class="bi bi-plus"></i> Ajouter un compteur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prévisualisation et Actions -->
+            <div class="col-lg-4">
+                <!-- Trame générée -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-code"></i> Trame Générée</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="trame-preview" id="trame-preview">
+                            <span class="text-muted">La trame apparaîtra ici...</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-secondary w-100 mt-2" onclick="copierTrame()">
+                            <i class="bi bi-clipboard"></i> Copier
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-play-circle"></i> Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-info" onclick="validerTrame()">
+                                <i class="bi bi-check-circle"></i> Valider
+                            </button>
+                            <button class="btn btn-success" onclick="envoyerTrame()">
+                                <i class="bi bi-send"></i> Envoyer
+                            </button>
+                            <button class="btn btn-secondary" onclick="reinitialiser()">
+                                <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aide -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Aide</h6>
+                    </div>
+                    <div class="card-body">
+                        <small>
+                            <p><strong>Capteurs (S) :</strong></p>
+                            <ul class="mb-2">
+                                <li>HT : Température</li>
+                                <li>HM : Humidité</li>
+                                <li>FM : Fumée</li>
+                                <li>LM : Luminosité</li>
+                                <li>PR : Présence</li>
+                            </ul>
+                            <p><strong>Relais (O) :</strong></p>
+                            <ul class="mb-2">
+                                <li>RL1, RL2, RL3...</li>
+                                <li>État : 0 (OFF) ou 1 (ON)</li>
+                            </ul>
+                            <p><strong>Compteurs (C) :</strong></p>
+                            <ul class="mb-0">
+                                <li>EC : Énergie (kWh)</li>
+                                <li>WC : Eau (L)</li>
+                                <li>GC : Gaz (m³)</li>
+                            </ul>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- API Module -->
+    <script src="js/api.js"></script>
+    
+    <!-- Config3A JS -->
+    <script src="js/config3a.js"></script>
+</body>
+</html>

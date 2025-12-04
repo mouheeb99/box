@@ -1,23 +1,21 @@
-from flask import Flask, request, jsonify
+# api.py - VERSION DOCKER
+from flask import Flask, request, jsonify, send_from_directory  
 import threading
 import sys
 import os
 from config_parser import parser_trame_3A, appliquer_configuration
 
-# ✅ Ajouter le répertoire courant au path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Imports
 from box_manager import box_manager
 from mongo.consumer_mongo import demarrer_consumer_mongo
-from mongo.mongo_utils import mongo_manager  
+from mongo.mongo_utils import mongo_manager
 
 app = Flask(__name__)
 
 # ==========================================
 # DÉMARRAGE AUTOMATIQUE DU CONSUMER MONGODB
 # ==========================================
-
 def demarrer_consumer_en_arriere_plan():
     """Démarre le consumer MongoDB dans un thread séparé"""
     print("🔄 Démarrage du consumer MongoDB en arrière-plan...")
@@ -25,7 +23,6 @@ def demarrer_consumer_en_arriere_plan():
     consumer_thread.start()
     print("✅ Consumer MongoDB démarré en arrière-plan")
 
-# Démarrer le consumer au lancement de l'API
 demarrer_consumer_en_arriere_plan()
 
 # ==========================================
@@ -55,7 +52,6 @@ def create_box():
     if not box_id:
         return jsonify({"error": "ID de box requis"}), 400
     
-    # Configuration de la box
     config = {
         "capteurs": data.get('capteurs', []),
         "valeurs": data.get('valeurs', {}),
@@ -151,6 +147,11 @@ def get_system_status():
         "stopped_simulations": total - running,
         "boxes": list(boxes.keys())
     })
+
+# ==========================================
+# ENDPOINTS CONFIGURATION 3A
+# ==========================================
+
 @app.route('/api/config/3A', methods=['POST'])
 def recevoir_trame_3A():
     """Reçoit et applique une trame 3A"""
@@ -166,7 +167,6 @@ def recevoir_trame_3A():
         
         config = parser_trame_3A(trame)
         
-        # Vérification spéciale pour les capteurs (type S)
         if config['type'] == 'sensors':
             box = box_manager.get_box(config['box_id'])
             if box:
@@ -201,7 +201,6 @@ def recevoir_trame_3A():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-
 @app.route('/api/config/3A/validate', methods=['POST'])
 def valider_trame_3A():
     """Valide une trame 3A sans l'appliquer"""
@@ -221,44 +220,60 @@ def valider_trame_3A():
         return jsonify({"valid": False, "error": str(e)}), 400
 
 # ==========================================
-# PAGE D'ACCUEIL
+# ENDPOINT HISTORIQUE (NOUVEAU)
+# ==========================================
+
+@app.route('/api/boxes/<box_id>/history', methods=['GET'])
+def get_box_history(box_id):
+    """
+    Récupère l'historique des données d'une box
+    Query params:
+        - limit: nombre de résultats (default: 50, max: 200)
+    """
+    limit = request.args.get('limit', 50, type=int)
+    
+    if limit > 200:
+        limit = 200
+    
+    if mongo_manager.is_connected():
+        try:
+            history = list(mongo_manager.box_data_collection
+                .find({"box_id": box_id})
+                .sort("timestamp", -1)
+                .limit(limit))
+            
+            for item in history:
+                item['_id'] = str(item['_id'])
+            
+            return jsonify(history)
+        
+        except Exception as e:
+            print(f"❌ Erreur récupération historique: {e}")
+            return jsonify({"error": str(e)}), 500
+    
+    return jsonify({"error": "MongoDB non connecté"}), 500
+
+@app.route('/api/boxes/<box_id>/relais/<relais_id>', methods=['PUT'])
+def set_relais_etat(box_id, relais_id):
+    data = request.json
+    etat = data.get('etat')
+
+# ==========================================
+# SERVIR LE FRONTEND (NOUVEAU)
 # ==========================================
 
 @app.route('/')
-def index():
-    kafka_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
-    mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
-    
-    return f"""
-    <html>
-        <head><title>Simulateur IoT - Docker</title></head>
-        <body>
-            <h1>🏭 Simulateur de Box IoT (Docker)</h1>
-            
-            <p>Les trames sont automatiquement sauvegardées dans MongoDB</p>
-            
-            <h3>📊 Configuration:</h3>
-            <ul>
-                <li>Kafka: {kafka_servers}</li>
-                <li>MongoDB: {mongo_uri}</li>
-            </ul>
-            
-            <h2>API Endpoints:</h2>
-            <ul>
-                <li><code>GET /api/boxes</code> - Liste toutes les box</li>
-                <li><code>POST /api/boxes</code> - Crée une nouvelle box</li>
-                <li><code>GET /api/boxes/{{id}}</code> - Détails d'une box</li>
-                <li><code>DELETE /api/boxes/{{id}}</code> - Supprime une box</li>
-                <li><code>POST /api/boxes/{{id}}/simulation/start</code> - Démarre simulation</li>
-                <li><code>POST /api/boxes/{{id}}/simulation/stop</code> - Arrête simulation</li>
-                <li><code>POST /api/boxes/{{id}}/trames/{{type}}</code> - Envoie trame manuelle</li>
-                <li><code>GET /api/capteurs/available</code> - Types de capteurs disponibles</li>
-                <li><code>GET /api/compteurs/available</code> - Types de compteurs disponibles</li>
-                <li><code>GET /api/status</code> - Statut global du système</li>
-            </ul>
-        </body>
-    </html>
-    """
+def serve_frontend():
+    """Page d'accueil - Dashboard"""
+    return send_from_directory('../frontend', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    """Servir les fichiers statiques (CSS, JS, images)"""
+    try:
+        return send_from_directory('../frontend', path)
+    except FileNotFoundError:
+        return jsonify({"error": "File not found"}), 404
 
 # ==========================================
 # DÉMARRAGE
@@ -267,7 +282,6 @@ def index():
 if __name__ == '__main__':
     print("🚀 Démarrage du serveur API (Docker)...")
     
-    # Afficher la configuration
     kafka_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
     mongo_uri = os.getenv('MONGO_URI', 'mongodb://localhost:27017')
     
@@ -275,20 +289,19 @@ if __name__ == '__main__':
     print(f"   - Kafka: {kafka_servers}")
     print(f"   - MongoDB: {mongo_uri}")
     
-    # Créer quelques box par défaut pour les tests AVEC COMPTEURS
     box_manager.create_box("box_001", {
         "capteurs": ["HT", "HM", "FM", "HT"],
         "nb_relais": 2,
         "compteurs": {
-            "EC": 1200,    # Énergie: 1200 kWh
-            "WC": 5000,    # Eau: 5000 L
-            "GC": 300      # Gaz: 300 m³
+            "EC": 1200,
+            "WC": 5000,
+            "GC": 300
         }
     })
     
     print("📍 API disponible sur le port 5000")
     print("💾 Consumer MongoDB actif - Sauvegarde automatique activée")
+    print("🎨 Frontend disponible sur http://localhost:5000")
     
-    # ✅ Configuration pour Docker
     port = int(os.getenv('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)

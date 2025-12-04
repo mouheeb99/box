@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique - Simulateur IoT</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">
+                <i class="bi bi-cpu"></i> Simulateur IoT
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                   
+                    <li class="nav-item">
+                        <a class="nav-link" href="config3a.html">
+                            <i class="bi bi-gear"></i> Config 3A
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="container-fluid mt-4">
+        <!-- En-tête -->
+        <div class="row mb-4">
+            <div class="col">
+                <button class="btn btn-outline-secondary btn-sm mb-3" onclick="goBack()">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </button>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="bi bi-clock-history"></i> Historique : <span id="box-id-title">-</span></h2>
+                        <p class="text-muted">Historique des données de la box</p>
+                    </div>
+                    <button class="btn btn-outline-primary" onclick="exportCSV()">
+                        <i class="bi bi-download"></i> Exporter CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtres -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="limit" id="limit-50" value="50" checked>
+                    <label class="btn btn-outline-primary" for="limit-50">50 derniers</label>
+
+                    <input type="radio" class="btn-check" name="limit" id="limit-100" value="100">
+                    <label class="btn btn-outline-primary" for="limit-100">100 derniers</label>
+
+                    <input type="radio" class="btn-check" name="limit" id="limit-200" value="200">
+                    <label class="btn btn-outline-primary" for="limit-200">200 derniers</label>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-primary" onclick="loadHistory()">
+                    <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+                </button>
+            </div>
+        </div>
+
+        <!-- Alerte si pas de données -->
+        <div id="no-data-alert" class="alert alert-info" style="display: none;">
+            <i class="bi bi-info-circle"></i> Aucune donnée disponible pour cette box.
+        </div>
+
+        <!-- Tableau des données -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-table"></i> Données</h5>
+                        <span class="badge bg-secondary" id="data-count">0 résultats</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="history-table">
+                                <thead>
+                                    <tr id="table-header">
+                                        <th>Timestamp</th>
+                                        <!-- Colonnes dynamiques -->
+                                    </tr>
+                                </thead>
+                                <tbody id="history-tbody">
+                                    <!-- Rempli dynamiquement -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <nav>
+                    <ul class="pagination justify-content-center" id="pagination">
+                        <!-- Pagination dynamique si nécessaire -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- API Module -->
+    <script src="js/api.js"></script>
+    
+    <!-- History JS -->
+    <script src="js/history.js"></script>
+</body>
+</html>

@@ -28,6 +28,9 @@ COPY mongo/mongo_utils.py ./mongo/
 # Copier tous les fichiers de test
 COPY tests/ ./tests
 
+COPY frontend/ ../frontend/
+
+
 # Variable d'environnement pour Python
 ENV PYTHONUNBUFFERED=1
 

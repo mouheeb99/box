@@ -1,0 +1,357 @@
+/* style.css - Styles personnalisés pour le simulateur IoT */
+
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-bg: #f8f9fa;
+    --dark-text: #212529;
+}
+
+/* ==========================================
+   GÉNÉRAL
+   ========================================== */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-bg);
+    padding-top: 70px; /* Pour la navbar fixe */
+}
+
+.container-fluid {
+    max-width: 1400px;
+}
+
+/* ==========================================
+   NAVBAR
+   ========================================== */
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+/* ==========================================
+   CARTES
+   ========================================== */
+
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 2px solid var(--light-bg);
+    font-weight: 600;
+}
+
+/* ==========================================
+   STATISTIQUES (DASHBOARD)
+   ========================================== */
+
+.stat-card {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.stat-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.stat-card .stat-label {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ==========================================
+   BADGES & LABELS
+   ========================================== */
+
+.badge {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+.status-active {
+    background-color: var(--success-color);
+}
+
+.status-stopped {
+    background-color: var(--secondary-color);
+}
+
+/* ==========================================
+   TABLEAU
+   ========================================== */
+
+.table {
+    background-color: white;
+}
+
+.table thead {
+    background-color: var(--light-bg);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* ==========================================
+   CAPTEURS (PROGRESS BARS)
+   ========================================== */
+
+.capteur-item {
+    margin-bottom: 1rem;
+}
+
+.capteur-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.capteur-value {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.progress {
+    height: 25px;
+}
+
+.progress-bar {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* ==========================================
+   RELAIS
+   ========================================== */
+
+.relais-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background-color: var(--light-bg);
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
+}
+
+.relais-label {
+    font-weight: 500;
+}
+
+.relais-status {
+    font-size: 1.5rem;
+}
+
+.relais-status.on {
+    color: var(--success-color);
+}
+
+.relais-status.off {
+    color: var(--secondary-color);
+}
+
+/* ==========================================
+   COMPTEURS
+   ========================================== */
+
+.compteur-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--light-bg);
+}
+
+.compteur-item:last-child {
+    border-bottom: none;
+}
+
+.compteur-label {
+    font-weight: 500;
+    color: var(--secondary-color);
+}
+
+.compteur-value {
+    font-weight: bold;
+    color: var(--dark-text);
+}
+
+/* ==========================================
+   FORMULAIRES
+   ========================================== */
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* ==========================================
+   BOUTONS
+   ========================================== */
+
+.btn {
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    border-radius: 5px;
+}
+
+.btn-icon {
+    margin-right: 0.5rem;
+}
+
+/* ==========================================
+   GÉNÉRATEUR 3A
+   ========================================== */
+
+.trame-preview {
+    background-color: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 5px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    word-break: break-all;
+}
+
+.capteur-form-group {
+    background-color: var(--light-bg);
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* ==========================================
+   RAFRAÎCHISSEMENT AUTO
+   ========================================== */
+
+.auto-refresh-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1000;
+}
+
+.refresh-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--primary-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================
+   ALERTES
+   ========================================== */
+
+.alert {
+    border-radius: 5px;
+    border: none;
+}
+
+/* ==========================================
+   LOADING
+   ========================================== */
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 768px) {
+    .stat-card .stat-value {
+        font-size: 2rem;
+    }
+    
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .btn {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ==========================================
+   UTILITAIRES
+   ========================================== */
+
+.text-mono {
+    font-family: 'Courier New', monospace;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.no-decoration {
+    text-decoration: none;
+    color: inherit;
+}
+
+.no-decoration:hover {
+    color: var(--primary-color);
+}
