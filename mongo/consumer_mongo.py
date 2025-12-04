@@ -1,4 +1,4 @@
-# consumer_mongo.py - VERSION DOCKER AVEC INDEXATION
+# consumer_mongo.py - 
 import sys
 import os
 from kafka import KafkaConsumer

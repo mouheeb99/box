@@ -1,4 +1,4 @@
-# mongo_utils.py - VERSION DOCKER avec box_data et capteurs indexés
+# mongo_utils.py 
 import os
 from pymongo import MongoClient
 from datetime import datetime
@@ -44,7 +44,7 @@ class MongoManager:
             return False
         
         try:
-            # ✅ MODIFICATION 2 : Structure des capteurs avec index
+            # 
             capteurs_avec_index = []
             if "capteurs" in config:
                 for capteur_type in config["capteurs"]:
@@ -129,9 +129,7 @@ class MongoManager:
             print(f"❌ Erreur suppression box {box_id}: {e}")
             return False
     
-    # ==========================================
-    # DONNÉES CAPTEURS (box_data)
-    # ==========================================
+   
     
     def save_sensor_data(self, trame_data):
         """Sauvegarde les données d'une trame 3F dans box_data"""
@@ -142,7 +140,7 @@ class MongoManager:
             box_id = trame_data.get("box_id")
             data = trame_data.get("data", {})
             
-            # ✅ MODIFICATION 3 : Sauvegarder dans box_data au lieu de sensor_data
+            # 
             sensor_doc = {
                 "box_id": box_id,
                 "timestamp": datetime.now(),
@@ -164,9 +162,7 @@ class MongoManager:
             print(f"❌ Erreur sauvegarde données capteurs: {e}")
             return False
     
-    # ==========================================
-    # LOGS SYSTÈME
-    # ==========================================
+    
     
     def log_event(self, level, source, message, box_id=None, action=None, extra_data=None):
         """Enregistre un événement dans les logs"""
@@ -192,9 +188,7 @@ class MongoManager:
             print(f"❌ Erreur enregistrement log: {e}")
             return False
     
-    # ==========================================
-    # REQUÊTES DE LECTURE
-    # ==========================================
+    
     
     def get_box_info(self, box_id):
         """Récupère les informations d'une box"""

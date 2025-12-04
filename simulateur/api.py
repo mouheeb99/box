@@ -1,8 +1,8 @@
-# api.py - VERSION DOCKER
 from flask import Flask, request, jsonify
 import threading
 import sys
 import os
+from config_parser import parser_trame_3A, appliquer_configuration
 
 # ✅ Ajouter le répertoire courant au path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Imports
 from box_manager import box_manager
 from mongo.consumer_mongo import demarrer_consumer_mongo
+from mongo.mongo_utils import mongo_manager  
 
 app = Flask(__name__)
 
@@ -150,6 +151,74 @@ def get_system_status():
         "stopped_simulations": total - running,
         "boxes": list(boxes.keys())
     })
+@app.route('/api/config/3A', methods=['POST'])
+def recevoir_trame_3A():
+    """Reçoit et applique une trame 3A"""
+    try:
+        if request.is_json:
+            data = request.json
+            trame = data.get('trame')
+        else:
+            trame = request.data.decode('utf-8').strip()
+        
+        if not trame:
+            return jsonify({"error": "Trame manquante"}), 400
+        
+        config = parser_trame_3A(trame)
+        
+        # Vérification spéciale pour les capteurs (type S)
+        if config['type'] == 'sensors':
+            box = box_manager.get_box(config['box_id'])
+            if box:
+                return jsonify({
+                    "success": False,
+                    "error": f"Les capteurs de {config['box_id']} sont déjà définis. Impossible de modifier."
+                }), 400
+        
+        success, message = appliquer_configuration(config, box_manager)
+        
+        if success:
+            if mongo_manager.is_connected():
+                mongo_manager.log_event(
+                    level="INFO",
+                    source="api",
+                    message=f"Configuration 3A appliquée: {message}",
+                    box_id=config['box_id'],
+                    action="config_3A",
+                    extra_data={"trame": trame, "config": config}
+                )
+            
+            return jsonify({
+                "success": True,
+                "message": message,
+                "box_id": config['box_id'],
+                "type": config['type'],
+                "config": config
+            }), 200
+        else:
+            return jsonify({"success": False, "error": message}), 400
+    
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/config/3A/validate', methods=['POST'])
+def valider_trame_3A():
+    """Valide une trame 3A sans l'appliquer"""
+    try:
+        if request.is_json:
+            trame = request.json.get('trame')
+        else:
+            trame = request.data.decode('utf-8').strip()
+        
+        if not trame:
+            return jsonify({"error": "Trame manquante"}), 400
+        
+        config = parser_trame_3A(trame)
+        return jsonify({"valid": True, "config": config}), 200
+    
+    except Exception as e:
+        return jsonify({"valid": False, "error": str(e)}), 400
 
 # ==========================================
 # PAGE D'ACCUEIL
@@ -165,7 +234,7 @@ def index():
         <head><title>Simulateur IoT - Docker</title></head>
         <body>
             <h1>🏭 Simulateur de Box IoT (Docker)</h1>
-            <h2>🔥 Consumer MongoDB actif en arrière-plan</h2>
+            
             <p>Les trames sont automatiquement sauvegardées dans MongoDB</p>
             
             <h3>📊 Configuration:</h3>

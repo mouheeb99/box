@@ -15,6 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY simulateur/__init__.py ./
 COPY simulateur/api.py ./
 COPY simulateur/box.py ./
+COPY simulateur/config_parser.py ./       
 COPY simulateur/box_manager.py ./
 COPY simulateur/kafka_utils.py ./
 

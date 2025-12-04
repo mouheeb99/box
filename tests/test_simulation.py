@@ -3,7 +3,7 @@ import urllib.parse
 import json
 import time
 
-print("🧪 Test simulation automatique...")
+print(" Test simulation automatique...")
 
 try:
     # Étape 1: Voir les box disponibles
@@ -14,11 +14,11 @@ try:
             print(f"  - {box_id}")
     
     # Étape 2: Démarrer simulation pour box_001
-    print("\n2️⃣ Démarrage simulation box_001 (intervalle 5 secondes)...")
+    print("\n2️⃣ Démarrage simulation Vbox (intervalle 5 secondes)...")
     
     data = json.dumps({"intervalle": 5}).encode('utf-8')
     req = urllib.request.Request(
-        "http://127.0.0.1:5000/api/boxes/TEST_BOX/simulation/start",
+        "http://127.0.0.1:5000/api/boxes/Vbox/simulation/start",
         data=data,
         headers={'Content-Type': 'application/json'}
     )
@@ -32,7 +32,7 @@ try:
     
     print("\n3️⃣ Arrêt de la simulation...")
     req = urllib.request.Request(
-        "http://127.0.0.1:5000/api/boxes/TEST_BOX/simulation/stop",
+        "http://127.0.0.1:5000/api/boxes/Vbox/simulation/stop",
         data=b'{}',
         headers={'Content-Type': 'application/json'}
     )

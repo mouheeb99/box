@@ -1,4 +1,4 @@
-# box.py 
+# box.py - VERSION AVEC INDEXATION DES CAPTEURS
 import random
 import time
 import math
@@ -287,11 +287,29 @@ class BoxSimulateur:
         return False
     
     def set_compteur_valeur(self, compteur_id, valeur):
-        """Modifie manuellement la valeur d'un compteur"""
+        """Modifie ou crée un compteur avec sa valeur"""
         if compteur_id in self.compteurs:
+            # Compteur existe, met à jour la valeur
             self.compteurs[compteur_id]["valeur"] = valeur
-            return True
-        return False
+        else:
+            # ✅ CORRECTION : Compteur n'existe pas, le créer !
+            compteur_info = self._get_compteur_info(compteur_id)
+            self.compteurs[compteur_id] = {
+                "nom": compteur_info["nom"],
+                "valeur": valeur,
+                "unite": compteur_info["unite"]
+            }
+            print(f"✅ Compteur {compteur_id} créé dynamiquement avec valeur {valeur}")
+        return True
+    
+    def _get_compteur_info(self, compteur_id):
+        """Retourne les infos d'un type de compteur"""
+        compteurs_disponibles = {
+            "EC": {"nom": "Énergie", "unite": "kWh"},
+            "WC": {"nom": "Eau", "unite": "L"},
+            "GC": {"nom": "Gaz", "unite": "m³"}
+        }
+        return compteurs_disponibles.get(compteur_id, {"nom": compteur_id, "unite": ""})
     
     def get_status(self):
         """Retourne l'état actuel de la box"""
